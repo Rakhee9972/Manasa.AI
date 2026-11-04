@@ -213,11 +213,14 @@ async function sendMessage(){
       body:JSON.stringify({message:message})
     });
 
- if(!response.ok) {
+if (!response.ok) {
   const errorData = await response.json();
-  throw new Error(errorData.error || "AI backend error");
-}
 
+  throw new Error(
+    (errorData.error || "AI backend error") +
+    (errorData.details ? ": " + errorData.details : "")
+  );
+                                         }
     const data = await response.json();
     const reply = document.createElement("div");
     reply.className = "message";
