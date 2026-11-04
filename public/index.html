@@ -207,7 +207,7 @@ async function sendMessage(){
   status.textContent = "Connecting to AI...";
 
   try{
-    const response = await fetch("/api/chat",{
+    const response = await fetch("https://dry-cherry-bfa9.rakhee636264.workers.dev",{
       method:"POST",
       headers:{"Content-Type":"application/json"},
       body:JSON.stringify({message:message})
