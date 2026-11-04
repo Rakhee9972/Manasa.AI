@@ -7,11 +7,11 @@ export default async function handler(req, res) {
   }
 
   try {
-    const apiKey = process.env.GEMINI_API_KEY;
+    const apiKey = process.env.OPENAI_API_KEY;
 
     if (!apiKey) {
       return res.status(500).json({
-        error: "Gemini API key is missing"
+        error: "OpenAI API key is missing"
       });
     }
 
@@ -24,17 +24,17 @@ export default async function handler(req, res) {
     }
 
     const response = await fetch(
-      "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent?key=" + apiKey,
+      "https://api.openai.com/v1/responses",
       {
         method: "POST",
         headers: {
-          "Content-Type": "application/json"
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${apiKey}`
         },
         body: JSON.stringify({
-          contents: [{
-            role: "user",
-            parts: [{ text: message }]
-          }]
+          model: "gpt-4.1-mini",
+          instructions: "You are Manasa.AI, a friendly and helpful assistant. Support Telugu, English and Kannada. Reply in the language used by the user. Be kind, respectful, honest and helpful.",
+          input: message
         })
       }
     );
@@ -42,18 +42,18 @@ export default async function handler(req, res) {
     const data = await response.json();
 
     if (!response.ok) {
-      console.error("Gemini API error:", data);
-      console.error("Gemini status:", response.status);
+      console.error("OpenAI API error:", data);
       return res.status(502).json({
-        error: "Gemini API request failed",
-        details: data.error?.message || "Unknown Gemini error"
+        error: "OpenAI API request failed",
+        details: data.error?.message || "Unknown API error"
       });
     }
 
-    const reply =
-      data.candidates?.[0]?.content?.parts
-        ?.map(part => part.text || "")
-        .join("") || "I couldn't generate a response.";
+    const reply = data.output
+      ?.flatMap(item => item.content || [])
+      .filter(item => item.type === "output_text")
+      .map(item => item.text)
+      .join("") || "Please try again ❤️";
 
     return res.status(200).json({ reply });
 
@@ -65,4 +65,3 @@ export default async function handler(req, res) {
     });
   }
 }
-
